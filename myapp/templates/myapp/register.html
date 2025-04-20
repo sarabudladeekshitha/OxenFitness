@@ -1,0 +1,412 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Register - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="registration-card">
+                <div class="text-center mb-4">
+                    <h3 class="welcome-text">Welcome to Oxen Fitness</h3>
+                    <p class="text-muted">Create your account</p>
+                </div>
+
+                <div id="messages-container" class="messages mb-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <form method="POST" action="{% url 'register' %}" enctype="multipart/form-data" class="registration-form" id="registration-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control custom-input" id="email" name="email" placeholder="Email" required>
+                        <label for="email">Email Address</label>
+                        <small class="form-text">Must match the email registered by admin</small>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control custom-input" id="username" name="username" placeholder="Username" required>
+                        <label for="username">Username</label>
+                        <small class="form-text">If the username is taken, a number will be added automatically</small>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="tel" class="form-control custom-input" id="phone_number" name="phone_number" placeholder="Phone">
+                        <label for="phone_number">Phone Number (Optional)</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select class="form-select custom-input" id="role" name="role" required>
+                            <option value="" selected disabled>Select your role</option>
+                            <option value="member">Member</option>
+                            <option value="trainer">Trainer</option>
+                        </select>
+                        <label for="role">Role</label>
+                        <small class="form-text">Must match the role assigned by admin</small>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control custom-input" id="password1" name="password1" placeholder="Password" required>
+                        <label for="password1">Password</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control custom-input" id="password2" name="password2" placeholder="Confirm Password" required>
+                        <label for="password2">Confirm Password</label>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="profile_picture" class="form-label">Profile Picture (Optional)</label>
+                        <input type="file" class="form-control custom-input" id="profile_picture" name="profile_picture" accept="image/*">
+                    </div>
+
+                    <button type="submit" class="btn custom-btn w-100 mb-3" id="submit-btn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="login-text">Already have an account? <a href="{% url 'login' %}" class="custom-link">Login here</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.registration-card {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Container padding adjustment */
+.container.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.welcome-text {
+    color: var(--gold-primary);
+    font-weight: 600;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-floating {
+    position: relative;
+}
+
+.form-floating > label {
+    padding: 0.8rem 1rem;
+    color: #666;
+}
+
+.custom-input {
+    height: 3.2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-select {
+    height: 3.2rem;
+}
+
+.custom-input:focus, .form-select:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 0.2rem rgba(198, 169, 98, 0.15);
+}
+
+.form-text {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    margin-left: 0.25rem;
+}
+
+.custom-btn {
+    background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    padding: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.custom-btn:hover {
+    background: linear-gradient(135deg, var(--gold-secondary), var(--gold-primary));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(198, 169, 98, 0.2);
+    color: white;
+}
+
+.custom-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.custom-alert {
+    border: none;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: rgba(198, 169, 98, 0.1);
+    border-left: 4px solid var(--gold-primary);
+}
+
+.login-text {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+.custom-link {
+    color: var(--gold-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.custom-link:hover {
+    color: var(--gold-secondary);
+    text-decoration: underline;
+}
+
+/* File input styling */
+input[type="file"].custom-input {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    height: auto;
+}
+
+/* Floating label adjustments */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(0.85) translateY(-1rem) translateX(0.15rem);
+    background-color: white;
+    padding: 0 0.5rem;
+    color: var(--gold-primary);
+}
+
+.form-floating > .form-select ~ label {
+    transform: scale(0.85) translateY(-1rem) translateX(0.15rem);
+    background-color: white;
+    padding: 0 0.5rem;
+}
+
+/* Loading spinner */
+.spinner-border {
+    margin-left: 8px;
+    width: 1rem;
+    height: 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registration-form');
+    
+    // Check if form exists
+    if (!form) {
+        console.error('Registration form not found');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    const messagesContainer = document.getElementById('messages-container');
+    
+    // Check if required elements exist
+    if (!submitBtn || !btnText || !spinner || !messagesContainer) {
+        console.error('Required form elements not found');
+        return;
+    }
+    
+    // Function to show error message
+    function showError(message) {
+        const alert = document.createElement('div');
+        alert.className = 'alert custom-alert alert-dismissible fade show';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        messagesContainer.appendChild(alert);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alert.classList.remove('show');
+            setTimeout(() => {
+                alert.remove();
+            }, 500);
+        }, 5000);
+    }
+    
+    // Function to set loading state
+    function setLoading(isLoading) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            btnText.textContent = 'Creating Account...';
+            spinner.classList.remove('d-none');
+        } else {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Create Account';
+            spinner.classList.add('d-none');
+        }
+    }
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        console.log('Form submitted');
+        
+        // Clear previous messages
+        messagesContainer.innerHTML = '';
+        
+        // Validate passwords
+        const password1 = document.getElementById('password1').value;
+        const password2 = document.getElementById('password2').value;
+        
+        if (password1 !== password2) {
+            showError('Password confirmation does not match');
+            return;
+        }
+        
+        if (password1.length < 8) {
+            showError('Password must be at least 8 characters long');
+            return;
+        }
+        
+        // Set loading state
+        setLoading(true);
+        
+        console.log('Submitting form to:', form.action);
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+            console.error('CSRF token not found');
+            showError('An error occurred. Please refresh the page and try again.');
+            setLoading(false);
+            return;
+        }
+        
+        // Collect form data
+        const formData = new FormData(form);
+        
+        // Log form data for debugging
+        console.log('Form data:');
+        for (const pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
+        // Submit the form
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken.value
+            }
+        })
+        .then(response => {
+            console.log('Response received:', response.status);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            // Check if the response is JSON
+            const contentType = response.headers.get('content-type');
+            console.log('Content-Type:', contentType);
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            }
+            
+            return response.text();
+        })
+        .then(data => {
+            console.log('Data received:', typeof data, data);
+            // Handle JSON response
+            if (typeof data === 'object') {
+                if (data.error) {
+                    console.log('Error received:', data.error);
+                    showError(data.error);
+                    setLoading(false);
+                } else if (data.success && data.redirect) {
+                    console.log('Success, redirecting to:', data.redirect);
+                    window.location.href = data.redirect;
+                } else {
+                    console.error('Unexpected JSON response:', data);
+                    showError('An unexpected response was received. Please try again.');
+                    setLoading(false);
+                }
+                return;
+            }
+            
+            // Handle HTML response
+            if (typeof data === 'string') {
+                // Check if the response contains a redirect
+                if (data.includes('window.location.href')) {
+                    // Extract the redirect URL
+                    const match = data.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/);
+                    if (match && match[1]) {
+                        console.log('Redirecting to:', match[1]);
+                        window.location.href = match[1];
+                        return;
+                    }
+                }
+                
+                // If no redirect, check for error messages
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const messages = doc.querySelectorAll('.alert');
+                
+                if (messages.length > 0) {
+                    // Show the first error message
+                    console.log('Error message found:', messages[0].textContent.trim());
+                    showError(messages[0].textContent.trim());
+                    setLoading(false);
+                } else {
+                    // If no error messages, assume success and redirect to login
+                    console.log('No error messages, redirecting to login');
+                    window.location.href = "{% url 'login' %}";
+                }
+            } else {
+                console.error('Unexpected response type:', typeof data);
+                showError('An unexpected response was received. Please try again.');
+                setLoading(false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('An error occurred. Please try again.');
+            setLoading(false);
+            
+            // Fallback: submit the form normally
+            console.log('Falling back to normal form submission');
+            form.removeEventListener('submit', arguments.callee);
+            form.submit();
+        });
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,79 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}{% if plan %}Edit Plan{% else %}Add New Plan{% endif %} - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-dark text-light min-vh-100 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-gradient-gold">
+                    <h3 class="card-title text-dark mb-0">{% if plan %}Edit Plan{% else %}Add New Plan{% endif %}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="planForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Plan Name</label>
+                            <input type="text" class="form-control bg-dark text-light" id="name" name="name" value="{{ plan.name|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="duration_days" class="form-label">Duration (Days)</label>
+                            <input type="number" class="form-control bg-dark text-light" id="duration_days" name="duration_days" value="{{ plan.duration_days|default:'' }}" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control bg-dark text-light" id="price" name="price" value="{{ plan.price|default:'' }}" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control bg-dark text-light" id="description" name="description" rows="3" required>{{ plan.description|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="features" class="form-label">Features (one per line)</label>
+                            <textarea class="form-control bg-dark text-light" id="features" name="features" rows="4" required>{{ plan.features|default:'' }}</textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if plan %}Save Changes{% else %}Add Plan{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-gold {
+    border: 1px solid var(--gold-primary);
+}
+
+.bg-gradient-gold {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+}
+
+.form-control, .form-select {
+    border: 1px solid rgba(198, 169, 98, 0.2);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 0.25rem rgba(198, 169, 98, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    border: none;
+    color: #000;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #DAA520, #C6A962);
+    color: #000;
+}
+</style>
+{% endblock %} 

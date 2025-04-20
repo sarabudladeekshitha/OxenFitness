@@ -1,0 +1,250 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Oxen Fitness{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section position-relative">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative">
+        <div class="row min-vh-100 align-items-center">
+            <div class="col-lg-8 text-white">
+                <h1 class="display-4 fw-bold mb-4">Transform Your Life with Oxen Fitness</h1>
+                <p class="lead mb-4">Join our state-of-the-art facility and start your fitness journey today. Expert trainers, modern equipment, and a supportive community await you.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-gold btn-lg">Get Started</a>
+                    <a href="{% url 'about' %}" class="btn btn-outline-light btn-lg">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Oxen Fitness?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-dumbbell fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Modern Equipment</h3>
+                        <p class="text-muted">State-of-the-art facilities and equipment for all your fitness needs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Expert Trainers</h3>
+                        <p class="text-muted">Professional trainers to guide you through your fitness journey.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Flexible Hours</h3>
+                        <p class="text-muted">Open 24/7 to accommodate your busy schedule.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Membership Plans -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Membership Plans</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h4 mb-3">Basic</h3>
+                        <div class="display-4 mb-3">₹1800<span class="text-muted">/month</span></div>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Access to gym floor</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Basic equipment usage</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Locker room access</li>
+                        </ul>
+                        <a href="{% url 'register' %}" class="btn btn-gold">Choose Plan</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="ribbon ribbon-top-right"><span>Popular</span></div>
+                        <h3 class="h4 mb-3">Premium</h3>
+                        <div class="display-4 mb-3">₹2500<span class="text-muted">/month</span></div>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>All Basic features</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Group classes</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Personal trainer (2x/month)</li>
+                        </ul>
+                        <a href="{% url 'register' %}" class="btn btn-gold">Choose Plan</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h4 mb-3">Elite</h3>
+                        <div class="display-4 mb-3">₹3000<span class="text-muted">/month</span></div>
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>All Premium features</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unlimited personal training</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Nutrition consultation</li>
+                        </ul>
+                        <a href="{% url 'register' %}" class="btn btn-gold">Choose Plan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Members Say</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{% static 'images/members/alekhya.jpg' %}" alt="Alekhya" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Alekhya</h5>
+                                <small class="text-muted">Member since 2023</small>
+                            </div>
+                        </div>
+                        <p class="card-text">"The trainers at Oxen Fitness are amazing! They helped me achieve my fitness goals in just 6 months."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{% static 'images/members/hari.jpg' %}" alt="Hari Om" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Hari Om</h5>
+                                <small class="text-muted">Member since 2022</small>
+                            </div>
+                        </div>
+                        <p class="card-text">"The facilities are top-notch and the community is so supportive. Best gym I've ever been to!"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{% static 'images/members/meghana.jpg' %}" alt="Pravalika" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h5 class="mb-0">Meghana</h5>
+                                <small class="text-muted">Member since 2021</small>
+                            </div>
+                        </div>
+                        <p class="card-text">"The 24/7 access is perfect for my busy schedule. I can work out whenever I want!"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Start Your Fitness Journey?</h2>
+        <p class="lead mb-4">Join Oxen Fitness today and transform your life!</p>
+        <a href="{% url 'register' %}" class="btn btn-gold btn-lg">Get Started Now</a>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.ribbon {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    position: absolute;
+}
+
+.ribbon span {
+    position: absolute;
+    display: block;
+    width: 225px;
+    padding: 8px 0;
+    background-color: #ffd700;
+    box-shadow: 0 5px 10px rgba(0,0,0,.1);
+    color: #000;
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 17px;
+    transform: rotate(45deg);
+    right: -25px;
+    top: 30px;
+}
+
+.ribbon-top-right {
+    top: -10px;
+    right: -10px;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.text-primary {
+    color: #ffd700 !important;
+}
+
+.btn-gold {
+    background-color: #ffd700;
+    color: #000;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background-color: #ffed4a;
+    color: #000;
+    transform: translateY(-2px);
+}
+
+.btn-outline-light:hover {
+    background-color: #ffd700;
+    border-color: #ffd700;
+    color: #000;
+}
+</style>
+{% endblock %} 

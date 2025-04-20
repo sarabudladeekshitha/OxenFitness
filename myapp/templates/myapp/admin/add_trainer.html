@@ -1,0 +1,233 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid px-4">
+        <!-- Header with Back Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Add New Trainer</h1>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-link text-decoration-none">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                {% if message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                                {% else %}
+                                <i class="fas fa-check-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div>{{ message }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Profile Picture Section -->
+                        <div class="col-md-3 text-center mb-4">
+                            <div class="profile-upload">
+                                <div class="profile-pic-wrapper mb-3">
+                                    <div class="profile-pic">
+                                        <img src="{% static 'images/default-profile.svg' %}" alt="Trainer Profile" 
+                                             class="rounded-circle img-thumbnail" id="profile-preview" 
+                                             style="width: 150px; height: 150px; object-fit: cover;">
+                                    </div>
+                                </div>
+                                <label for="profile_picture" class="btn btn-gold btn-sm">
+                                    <i class="fas fa-camera me-2"></i> Change Photo
+                                </label>
+                                <input type="file" name="profile_picture" id="profile_picture" accept="image/*" class="d-none">
+                            </div>
+                        </div>
+
+                        <!-- Form Fields Section -->
+                        <div class="col-md-9">
+                            <!-- Basic Information -->
+                            <div class="mb-4">
+                                <h5 class="mb-3">Basic Information</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="username" class="form-label">Username</label>
+                                            <input type="text" name="username" id="username" class="form-control" required>
+                                            <div class="invalid-feedback">Please enter a username.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" name="email" id="email" class="form-control" required>
+                                            <div class="invalid-feedback">Please enter a valid email.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="password" class="form-label">Password</label>
+                                            <input type="password" name="password" id="password" class="form-control" required>
+                                            <div class="invalid-feedback">Please enter a password.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Professional Information -->
+                            <div class="mb-4">
+                                <h5 class="mb-3">Professional Information</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="specialization" class="form-label">Specialization</label>
+                                            <select name="specialization" id="specialization" class="form-select" required>
+                                                <option value="">Select Specialization</option>
+                                                <option value="General Fitness">General Fitness</option>
+                                                <option value="Weight Training">Weight Training</option>
+                                                <option value="Cardio">Cardio</option>
+                                                <option value="Yoga">Yoga</option>
+                                                <option value="CrossFit">CrossFit</option>
+                                                <option value="Martial Arts">Martial Arts</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a specialization.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="experience_years" class="form-label">Years of Experience</label>
+                                            <input type="number" name="experience_years" id="experience_years" 
+                                                   class="form-control" min="0" required>
+                                            <div class="invalid-feedback">Please enter years of experience.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-gold">
+                                    <i class="fas fa-plus me-2"></i> Add Trainer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.main-content {
+    padding-top: 2rem;
+}
+
+.btn-gold {
+    background: linear-gradient(45deg, #BF9005, #D4A017);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background: linear-gradient(45deg, #D4A017, #BF9005);
+    transform: translateY(-1px);
+    color: white;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #BF9005;
+    box-shadow: 0 0 0 0.2rem rgba(191, 144, 5, 0.25);
+}
+
+.profile-pic {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-pic:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+}
+
+.btn-link {
+    color: #495057;
+}
+
+.btn-link:hover {
+    color: #BF9005;
+}
+
+h5 {
+    color: #343a40;
+    font-weight: 600;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Profile picture preview
+    const profilePicture = document.getElementById('profile_picture');
+    const profilePreview = document.getElementById('profile-preview');
+
+    profilePicture.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profilePreview.src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        } else {
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Adding Trainer...';
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %} 

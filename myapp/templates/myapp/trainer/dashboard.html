@@ -1,0 +1,1585 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% load debug %}
+
+{% block title %}Trainer Dashboard - Oxen Fitness{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/workout_plans.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="trainer-dashboard">
+    <!-- Sticky Navigation -->
+    <nav class="trainer-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{% url 'trainer_dashboard' %}" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#members-section">
+                    <i class="fas fa-users"></i> My Members
+                </a>
+                <a href="#workout-plans-section">
+                    <i class="fas fa-dumbbell"></i> Workout Plans
+                </a>
+              
+                <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        </div>
+
+        <!-- Dashboard Overview Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ assigned_members.count }}</h3>
+                    <p>Total Members</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ active_plans_count }}</h3>
+                    <p>Active Plans</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Members Section -->
+        <div class="section" id="members-section">
+            <div class="section-header">
+                <h2>My Members</h2>
+               
+            </div>
+            <div class="members-table-container">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Assigned Plan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in assigned_members %}
+                        <tr>
+                            <td class="member-info">
+                                <div class="member-avatar">
+                                    {% if member.user.profile_picture %}
+                                        <img src="{{ member.user.profile_picture.url }}" alt="{{ member.user.username }}">
+                                    {% else %}
+                                        <i class="fas fa-user"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="member-details">
+                                    <h4>{{ member.user.get_full_name|default:member.user.username }}</h4>
+                                    <p>{{ member.user.email }}</p>
+                                </div>
+                            </td>
+                            <td>
+                                {% if member.membership_plan %}
+                                    <span class="plan-badge">{{ member.membership_plan.name }}</span>
+                                {% else %}
+                                    <span class="plan-badge no-plan">No Plan</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="no-data-row">
+                                <div class="no-data-message">
+                                    <i class="fas fa-users-slash"></i>
+                                    <p>No members assigned yet</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Workout Plans Section -->
+        <div class="section workout-plans-section">
+            <div class="section-header">
+                <h2>Workout Plans</h2>
+            </div>
+            
+            <!-- Workout Plans Tabs -->
+            <div class="workout-plans-tabs">
+                <button class="tab-btn active" data-tab="all-plans">
+                    <i class="fas fa-list"></i> All Plans
+                </button>
+                <button class="tab-btn" data-tab="create-plan">
+                    <i class="fas fa-plus"></i> Create Plan
+                </button>
+            </div>
+            
+            <!-- All Plans Tab Content -->
+            <div class="tab-content active" id="all-plans">
+            <div class="workout-plans-grid">
+                    {% for plan in workout_plans|dictsort:"created_date" %}
+                <div class="workout-plan-card" data-plan-id="{{ plan.id }}">
+                    <div class="plan-header">
+                        <h3>{{ plan.title }}</h3>
+                        <div class="plan-meta">
+                            <span class="member-name">
+                                    <i class="fas fa-user"></i> {{ plan.member.user.get_full_name|default:plan.member.user.username }}
+                            </span>
+                            <span class="duration">
+                                    <i class="fas fa-calendar-alt"></i> {{ plan.duration_weeks }} weeks
+                                </span>
+                                <span class="created-date">
+                                    <i class="fas fa-clock"></i> Created: {{ plan.created_date|date:"M d, Y" }}
+                            </span>
+                        </div>
+                        <div class="target-goal">
+                            <i class="fas fa-bullseye"></i> {{ plan.target_goal }}
+                        </div>
+                    </div>
+                        
+                        <div class="day-selector">
+                            {% if plan.exercises %}
+                                {% for day, day_data in plan.exercises.items %}
+                                    {% if day_data.exercises %}
+                                    <button class="day-select-btn" data-day="{{ day|lower }}-{{ plan.id }}">
+                                        <i class="fas fa-calendar-day"></i> {{ day }}
+                                    </button>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    
+                    <div class="day-wise-schedule">
+                            {% if plan.exercises %}
+                                {% for day, day_data in plan.exercises.items %}
+                                    {% if day_data.exercises %}
+                                    <div class="day-schedule" id="day-{{ day|lower }}-{{ plan.id }}" style="display: none;">
+                            <div class="day-header">
+                                            <h4><i class="fas fa-calendar-day"></i> {{ day }}</h4>
+                            </div>
+                            <div class="exercises-list">
+                                            {% for exercise in day_data.exercises %}
+                                <div class="exercise-item">
+                                    <div class="exercise-name">{{ exercise.name }}</div>
+                                    <div class="exercise-details">
+                                        <span><i class="fas fa-layer-group"></i> {{ exercise.sets }} sets</span>
+                                        <span><i class="fas fa-repeat"></i> {{ exercise.reps }} reps</span>
+                                        {% if exercise.rest %}
+                                        <span><i class="fas fa-clock"></i> {{ exercise.rest }}s rest</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                                    {% endif %}
+                        {% endfor %}
+                            {% else %}
+                                <div class="no-days">
+                                    <p>No workout days defined for this plan</p>
+                                </div>
+                            {% endif %}
+                    </div>
+                    
+                    <div class="plan-actions">
+                        <button class="btn btn-outline-primary edit-plan-btn" onclick="editPlan({{ plan.id }})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-outline-danger delete-plan-btn" onclick="deletePlan({{ plan.id }})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-dumbbell"></i>
+                    <p>No workout plans created yet</p>
+                        <button class="btn btn-primary" onclick="switchToCreatePlan()">
+                        Create Your First Plan
+                    </button>
+                </div>
+                {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Create Plan Tab Content -->
+            <div class="tab-content" id="create-plan">
+                <form id="workoutPlanForm" class="create-plan-form">
+                    <div class="form-group">
+                        <label for="planTitle">Plan Title</label>
+                        <input type="text" id="planTitle" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="memberSelect">Select Member</label>
+                            <select id="memberSelect" class="form-control" required>
+                                <option value="">Choose a member</option>
+                                {% for member in assigned_members %}
+                                <option value="{{ member.id }}">{{ member.user.get_full_name|default:member.user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-3">
+                            <label for="durationWeeks">Duration (weeks)</label>
+                            <input type="number" id="durationWeeks" class="form-control" min="1" value="4" required>
+                        </div>
+                        
+                        <div class="form-group col-md-3">
+                            <label for="targetGoal">Target Goal</label>
+                            <select id="targetGoal" class="form-control" required>
+                                <option value="weight_loss">Weight Loss</option>
+                                <option value="muscle_gain">Muscle Gain</option>
+                                <option value="endurance">Endurance</option>
+                                <option value="strength">Strength</option>
+                                <option value="flexibility">Flexibility</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="weekday-tabs">
+                        <div class="weekday-select">
+                            <label for="daySelect">Select Day</label>
+                            <select id="daySelect" class="form-control">
+                                <option value="monday">Monday</option>
+                                <option value="tuesday">Tuesday</option>
+                                <option value="wednesday">Wednesday</option>
+                                <option value="thursday">Thursday</option>
+                                <option value="friday">Friday</option>
+                                <option value="saturday">Saturday</option>
+                                <option value="sunday">Sunday</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" id="addDayBtn">
+                                <i class="fas fa-plus"></i> Add Day
+                            </button>
+                        </div>
+                        <div id="activeDayTabs" class="active-days">
+                            <!-- Active day tabs will be added here dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div id="dayContents" class="day-contents">
+                        <!-- Day content will be shown here -->
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Workout Plan
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="switchToAllPlans()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm">
+                    <div class="form-group">
+                        <label for="memberName">Member Name</label>
+                        <input type="text" id="memberName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberEmail">Email</label>
+                        <input type="email" id="memberEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberPlan">Membership Plan</label>
+                        <select id="memberPlan" class="form-control" required>
+                            <option value="">Select a plan</option>
+                            {% for plan in membership_plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" id="saveMemberBtn">Save Member</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Workout Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Trainer Dashboard Styles */
+    .trainer-dashboard {
+        min-height: 100vh;
+        background-color: #121212;
+        color: #f8f9fa;
+    }
+    
+    /* Navigation */
+    .trainer-nav {
+        background-color: #000000;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .nav-brand a {
+        color: var(--gold-primary);
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+    
+    .nav-brand a i {
+        margin-right: 0.5rem;
+    }
+    
+    .nav-links {
+        display: flex;
+        gap: 1.5rem;
+    }
+    
+    .nav-links a {
+        color: #f8f9fa;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: color 0.3s;
+    }
+    
+    .nav-links a i {
+        margin-right: 0.5rem;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+        color: var(--gold-primary);
+    }
+    
+    /* Main Content */
+    .dashboard-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Welcome Section */
+    .welcome-section {
+        margin-bottom: 2rem;
+    }
+    
+    .welcome-section h1 {
+        color: var(--gold-primary);
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-section .date {
+        color: #adb5bd;
+        font-size: 1rem;
+    }
+    
+    /* Stats Cards */
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background-color: #1e1e1e;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-icon {
+        background-color: rgba(198, 169, 98, 0.1);
+        color: var(--gold-primary);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    .stat-content h3 {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+        color: #f8f9fa;
+    }
+    
+    .stat-content p {
+        color: #adb5bd;
+        margin-bottom: 0;
+    }
+    
+    /* Section Styles */
+    .section {
+        background-color: #1e1e1e;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-header h2 {
+        color: var(--gold-primary);
+        font-size: 1.5rem;
+        margin-bottom: 0;
+    }
+    
+    /* Table Styles */
+    .members-table-container, .workout-plans-table-container {
+        overflow-x: auto;
+    }
+    
+    .members-table, .workout-plans-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .members-table th, .workout-plans-table th {
+        background-color: #2a2a2a;
+        color: var(--gold-primary);
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+    }
+    
+    .members-table td, .workout-plans-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #2a2a2a;
+    }
+    
+    .members-table tr:hover, .workout-plans-table tr:hover {
+        background-color: #2a2a2a;
+    }
+    
+    /* Member Info */
+    .member-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        overflow: hidden;
+    }
+    
+    .member-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .member-details h4 {
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .member-details p {
+        color: #adb5bd;
+        font-size: 0.875rem;
+        margin-bottom: 0;
+    }
+    
+    /* Plan Badge */
+    .plan-badge {
+        background-color: rgba(198, 169, 98, 0.1);
+        color: var(--gold-primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+    }
+    
+    .plan-badge.no-plan {
+        background-color: #2a2a2a;
+        color: #adb5bd;
+    }
+    
+    /* Progress Bar */
+    .progress-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .progress {
+        flex-grow: 1;
+        height: 8px;
+        background-color: #2a2a2a;
+        border-radius: 4px;
+        margin-right: 0.5rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background-color: var(--gold-primary);
+        height: 100%;
+    }
+    
+    .progress-text {
+        font-size: 0.875rem;
+        color: #adb5bd;
+        min-width: 40px;
+    }
+    
+    /* Actions */
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-icon {
+        background-color: transparent;
+        color: #adb5bd;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    
+    .btn-icon:hover {
+        background-color: rgba(198, 169, 98, 0.1);
+        color: var(--gold-primary);
+    }
+    
+    /* No Data */
+    .no-data-row {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .no-data-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #adb5bd;
+    }
+    
+    .no-data-message i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #2a2a2a;
+    }
+    
+    /* Workout Plans Grid */
+    .workout-plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    /* Plan Card */
+    .workout-plan-card {
+        background-color: #1e1e1e;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        max-height: 600px;
+    }
+
+    .workout-plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Plan Header */
+    .plan-header {
+        background: linear-gradient(135deg, #C6A962, #DAA520);
+        padding: 1.5rem;
+        color: #000000;
+    }
+
+    .plan-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .plan-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .plan-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .target-goal {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #000000;
+        font-weight: 500;
+        margin-top: 0.75rem;
+    }
+
+    .created-date {
+        color: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Day-wise Schedule */
+    .day-wise-schedule {
+        padding: 1.5rem;
+        overflow-y: auto;
+        flex-grow: 1;
+        max-height: 400px;
+    }
+
+    .day-schedule {
+        background: #2a2a2a;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .day-schedule:last-child {
+        margin-bottom: 0;
+    }
+
+    .day-header {
+        background: rgba(198, 169, 98, 0.1);
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .day-header h4 {
+        margin: 0;
+        color: var(--gold-primary);
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .focus-area {
+        background: rgba(198, 169, 98, 0.2);
+        color: var(--gold-primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+    }
+
+    /* Exercises List */
+    .exercises-list {
+        padding: 1rem;
+    }
+
+    .exercise-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background-color 0.2s ease;
+    }
+
+    .exercise-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .exercise-item:last-child {
+        border-bottom: none;
+    }
+
+    .exercise-name {
+        color: #f8f9fa;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .exercise-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: #adb5bd;
+    }
+
+    .exercise-details span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .no-exercises, .no-days {
+        text-align: center;
+        padding: 1rem;
+        color: #adb5bd;
+        font-style: italic;
+    }
+
+    /* Plan Actions */
+    .plan-actions {
+        background: #2a2a2a;
+        padding: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: #1e1e1e;
+        border-radius: 12px;
+        color: #adb5bd;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--gold-primary);
+    }
+
+    .empty-state p {
+        color: #adb5bd;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .workout-plans-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .plan-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .created-date {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Progress Tracker */
+    .progress-tracker-container {
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .chart-container {
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-header {
+        margin-bottom: 1rem;
+    }
+    
+    .chart-header h3 {
+        color: var(--gold-primary);
+        font-size: 1.25rem;
+        margin: 0;
+    }
+    
+    .chart-wrapper {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #2a2a2a;
+        border-radius: 8px;
+        z-index: 1;
+    }
+    
+    .chart-placeholder i {
+        font-size: 3rem;
+        color: var(--gold-primary);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .chart-placeholder p {
+        color: #adb5bd;
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    #weightProgressChart {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .weight-input-container {
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .weight-input-container label {
+        color: var(--gold-primary);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .input-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .input-group input {
+        flex: 1;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        color: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+    }
+    
+    .input-group input:focus {
+        outline: none;
+        border-color: var(--gold-primary);
+    }
+    
+    .input-group input:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .input-group .btn {
+        padding: 0.5rem 2rem;
+        font-weight: 500;
+    }
+    
+    .input-group .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    @media (max-width: 768px) {
+        .progress-tracker-container {
+            padding: 1rem;
+        }
+        
+        .chart-container {
+            padding: 1rem;
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+        }
+        
+        .input-group {
+        flex-direction: column;
+        }
+        
+        .input-group .btn {
+            width: 100%;
+        }
+    }
+
+    /* Add these styles to your existing CSS */
+    .day-selector {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+        overflow-x: auto;
+        background: #2a2a2a;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .day-select-btn {
+        background: rgba(198, 169, 98, 0.1);
+        color: var(--gold-primary);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .day-select-btn:hover {
+        background: rgba(198, 169, 98, 0.2);
+    }
+
+    .day-select-btn.active {
+        background: var(--gold-primary);
+        color: #000000;
+    }
+    
+    @media (max-width: 768px) {
+        .day-selector {
+            padding: 0.75rem;
+        }
+        
+        .day-select-btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Add these styles to your existing CSS */
+    .weekday-select {
+        display: flex;
+        align-items: center;
+            gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .weekday-select select {
+        width: auto;
+        min-width: 150px;
+    }
+
+    .active-days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .day-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(198, 169, 98, 0.1);
+        color: var(--gold-primary);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+    .day-tab.active {
+        background: var(--gold-primary);
+        color: #000000;
+    }
+
+    .day-tab .remove-day {
+        background: none;
+        border: none;
+        color: inherit;
+        padding: 0;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+
+    .day-tab .remove-day:hover {
+        opacity: 1;
+    }
+
+    .day-contents {
+        background: #1e1e1e;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .day-content {
+        display: none;
+    }
+
+    .day-content.active {
+        display: block;
+    }
+
+    .exercise-list {
+        margin-bottom: 1rem;
+    }
+
+    .exercise-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+            padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .exercise-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .btn-add-exercise {
+        margin-bottom: 1rem;
+    }
+
+    .btn-remove-exercise {
+        background: none;
+        border: none;
+        color: #dc3545;
+        padding: 0.375rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-remove-exercise:hover {
+        background: rgba(220, 53, 69, 0.1);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const daySelect = document.getElementById('daySelect');
+        const addDayBtn = document.getElementById('addDayBtn');
+        const activeDayTabs = document.getElementById('activeDayTabs');
+        const dayContents = document.getElementById('dayContents');
+        const addedDays = new Set();
+
+        // Function to create a new day tab
+        function createDayTab(day) {
+            const tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = 'day-tab';
+            tab.setAttribute('data-day', day);
+            tab.innerHTML = `
+                <i class="fas fa-calendar-day"></i>
+                ${day.charAt(0).toUpperCase() + day.slice(1)}
+                <button type="button" class="remove-day" title="Remove Day">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // Add remove functionality
+            const removeBtn = tab.querySelector('.remove-day');
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dayContent = document.getElementById(`${day}-content`);
+                if (dayContent) {
+                    dayContent.remove();
+                }
+                tab.remove();
+                addedDays.delete(day);
+                
+                // Activate another day if available
+                const remainingTabs = activeDayTabs.querySelectorAll('.day-tab');
+                if (remainingTabs.length > 0) {
+                    remainingTabs[0].click();
+                }
+            });
+            
+            // Add click functionality
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs and contents
+                document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active'));
+                
+                // Activate clicked tab and its content
+                tab.classList.add('active');
+                const content = document.getElementById(`${day}-content`);
+                if (content) {
+                    content.classList.add('active');
+                }
+            });
+            
+            return tab;
+        }
+
+        // Function to create day content
+        function createDayContent(day) {
+            const content = document.createElement('div');
+            content.id = `${day}-content`;
+            content.className = 'day-content';
+            content.innerHTML = `
+                <div class="exercise-list">
+                    <div class="exercise-item">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>Exercise Name</label>
+                                <input type="text" class="form-control" placeholder="e.g., Bench Press" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Sets</label>
+                                <input type="number" class="form-control" min="1" value="3" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Reps</label>
+                                <input type="number" class="form-control" min="1" value="12" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Rest (sec)</label>
+                                <input type="number" class="form-control" min="0" value="60" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>Action</label>
+                                <button type="button" class="btn-remove-exercise">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-outline-primary btn-add-exercise">
+                    <i class="fas fa-plus"></i> Add Exercise
+                </button>
+                
+                <div class="form-group mt-3">
+                    <label for="${day}Notes">Notes</label>
+                    <textarea id="${day}Notes" class="form-control" rows="2" placeholder="Add any notes for this day's workout"></textarea>
+                </div>
+            `;
+            
+            // Add exercise button functionality
+            const addExerciseBtn = content.querySelector('.btn-add-exercise');
+            addExerciseBtn.addEventListener('click', function() {
+                const exerciseList = this.previousElementSibling;
+                const exerciseItem = document.createElement('div');
+                exerciseItem.className = 'exercise-item';
+                exerciseItem.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Exercise Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., Bench Press" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Sets</label>
+                            <input type="number" class="form-control" min="1" value="3" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Reps</label>
+                            <input type="number" class="form-control" min="1" value="12" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Rest (sec)</label>
+                            <input type="number" class="form-control" min="0" value="60" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Action</label>
+                            <button type="button" class="btn-remove-exercise">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                exerciseList.appendChild(exerciseItem);
+                
+                // Add remove functionality to new exercise
+                const removeBtn = exerciseItem.querySelector('.btn-remove-exercise');
+                removeBtn.addEventListener('click', function() {
+                    exerciseItem.remove();
+                });
+            });
+            
+            // Add remove functionality to initial exercise
+            const removeBtn = content.querySelector('.btn-remove-exercise');
+            removeBtn.addEventListener('click', function() {
+                this.closest('.exercise-item').remove();
+            });
+            
+            return content;
+        }
+
+        // Add Day button functionality
+        addDayBtn.addEventListener('click', () => {
+            const selectedDay = daySelect.value;
+            
+            if (addedDays.has(selectedDay)) {
+                alert('This day has already been added');
+                return;
+            }
+            
+            // Add day
+            addedDays.add(selectedDay);
+            
+            // Create and add tab
+            const tab = createDayTab(selectedDay);
+            activeDayTabs.appendChild(tab);
+            
+            // Create and add content
+            const content = createDayContent(selectedDay);
+            dayContents.appendChild(content);
+            
+            // Activate the new day
+            tab.click();
+        });
+
+        // Tab switching functionality
+        const tabBtns = document.querySelectorAll('.workout-plans-tabs .tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Remove active class from all buttons and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Add exercise functionality
+        const addExerciseBtns = document.querySelectorAll('.btn-add-exercise');
+        
+        addExerciseBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const exerciseList = this.previousElementSibling;
+                const exerciseItem = document.createElement('div');
+                exerciseItem.className = 'exercise-item';
+                exerciseItem.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Exercise Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., Bench Press" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Sets</label>
+                            <input type="number" class="form-control" min="1" value="3" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Reps</label>
+                            <input type="number" class="form-control" min="1" value="12" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Rest (sec)</label>
+                            <input type="number" class="form-control" min="0" value="60" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label>Action</label>
+                            <button type="button" class="btn-remove-exercise">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                exerciseList.appendChild(exerciseItem);
+                
+                // Add event listener to the new remove button
+                const removeBtn = exerciseItem.querySelector('.btn-remove-exercise');
+                removeBtn.addEventListener('click', function() {
+                    exerciseItem.remove();
+                });
+            });
+        });
+        
+        // Remove exercise functionality
+        const removeExerciseBtns = document.querySelectorAll('.btn-remove-exercise');
+        
+        removeExerciseBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.exercise-item').remove();
+            });
+        });
+        
+        // Form submission
+        const workoutPlanForm = document.getElementById('workoutPlanForm');
+        
+            workoutPlanForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const title = document.getElementById('planTitle').value;
+                const targetGoal = document.getElementById('targetGoal').value;
+                const durationWeeks = document.getElementById('durationWeeks').value;
+                const memberId = document.getElementById('memberSelect').value;
+                
+                // Validate required fields
+                if (!title || !targetGoal || !durationWeeks || !memberId) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                // Collect exercises for each day
+                const exercises = {};
+                const dayContents = document.querySelectorAll('.day-content');
+                
+                dayContents.forEach(dayContent => {
+                    const dayName = dayContent.id.replace('-content', '');
+                    const exerciseItems = dayContent.querySelectorAll('.exercise-item');
+                    const notes = document.getElementById(`${dayName}Notes`)?.value || '';
+                    
+                // Only include days that have at least one exercise with a name
+                const dayExercises = Array.from(exerciseItems)
+                    .map(item => {
+                            const inputs = item.querySelectorAll('input');
+                            return {
+                            name: inputs[0].value.trim(),
+                                sets: inputs[1].value,
+                                reps: inputs[2].value,
+                                rest: inputs[3].value
+                            };
+                    })
+                    .filter(exercise => exercise.name !== ''); // Filter out exercises with empty names
+                
+                // Only add the day if it has exercises
+                if (dayExercises.length > 0) {
+                    exercises[dayName] = {
+                        exercises: dayExercises,
+                        notes: notes
+                    };
+                }
+            });
+            
+            // Check if at least one day has exercises
+            if (Object.keys(exercises).length === 0) {
+                alert('Please add at least one exercise to your workout plan');
+                return;
+            }
+                
+                // Prepare data for submission
+                const formData = {
+                    title: title,
+                    target_goal: targetGoal,
+                    duration_weeks: durationWeeks,
+                    member_id: memberId,
+                    exercises: exercises
+                };
+                
+                try {
+                    // Send data to server
+                    const response = await fetch('/create-workout-plan/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert('Workout plan created successfully!');
+                    // Switch to All Plans tab
+                    switchToAllPlans();
+                        // Reload the page to show the new plan
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('Error creating workout plan: ' + error.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while creating the workout plan');
+                }
+            });
+
+        // Initialize day selection for each workout plan
+        const workoutPlans = document.querySelectorAll('.workout-plan-card');
+        
+        workoutPlans.forEach(plan => {
+            const dayButtons = plan.querySelectorAll('.day-select-btn');
+            const daySchedules = plan.querySelectorAll('.day-schedule');
+            
+            // Show the first day by default if it exists
+            if (dayButtons.length > 0) {
+                const firstDayBtn = dayButtons[0];
+                const firstDayId = firstDayBtn.getAttribute('data-day');
+                const firstDaySchedule = plan.querySelector(`#day-${firstDayId}`);
+                
+                firstDayBtn.classList.add('active');
+                if (firstDaySchedule) {
+                    firstDaySchedule.style.display = 'block';
+                }
+            }
+            
+            // Add click handlers for day buttons
+            dayButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dayId = this.getAttribute('data-day');
+                    
+                    // Remove active class from all buttons
+                    dayButtons.forEach(b => b.classList.remove('active'));
+                    
+                    // Hide all day schedules
+                    daySchedules.forEach(schedule => {
+                        schedule.style.display = 'none';
+                    });
+                    
+                    // Show selected day and activate button
+                    this.classList.add('active');
+                    const selectedSchedule = plan.querySelector(`#day-${dayId}`);
+                    if (selectedSchedule) {
+                        selectedSchedule.style.display = 'block';
+                    }
+                });
+            });
+                            });
+                        });
+                        
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Function to switch to Create Plan tab
+    function switchToCreatePlan() {
+        const createPlanTab = document.querySelector('[data-tab="create-plan"]');
+        createPlanTab.click();
+    }
+    
+    // Function to switch to All Plans tab
+    function switchToAllPlans() {
+        const allPlansTab = document.querySelector('[data-tab="all-plans"]');
+        allPlansTab.click();
+    }
+
+    // Delete plan functionality
+    async function deletePlan(planId) {
+        if (!confirm('Are you sure you want to delete this workout plan?')) {
+            return;
+        }
+
+                    try {
+                        const response = await fetch(`/workout-plan/${planId}/delete/`, {
+                            method: 'DELETE',
+                            headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Remove the plan card from the UI
+                const planCard = document.querySelector(`.workout-plan-card[data-plan-id="${planId}"]`);
+                if (planCard) {
+                    planCard.remove();
+                }
+                                
+                                // Check if there are any plans left
+                                    const plansGrid = document.querySelector('.workout-plans-grid');
+                if (!plansGrid.querySelector('.workout-plan-card')) {
+                    // Show empty state if no plans left
+                                    plansGrid.innerHTML = `
+                                        <div class="empty-state">
+                                            <i class="fas fa-dumbbell"></i>
+                                            <p>No workout plans created yet</p>
+                            <button class="btn btn-primary" onclick="switchToCreatePlan()">
+                                                Create Your First Plan
+                                            </button>
+                                        </div>
+                                    `;
+                                }
+                        } else {
+                const error = await response.json();
+                alert('Error deleting workout plan: ' + (error.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+            alert('An error occurred while deleting the workout plan');
+        }
+    }
+</script>
+{% endblock %}

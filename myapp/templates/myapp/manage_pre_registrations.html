@@ -1,0 +1,188 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Manage Pre-registrations - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+            <div class="position-sticky pt-3">
+                {% include 'myapp/admin_sidebar.html' %}
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Pre-registrations</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPreRegistrationModal">
+                    <i class="fas fa-plus"></i> Create Pre-registration
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Registrations</h5>
+                            <h2 class="display-4">{{ pending_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Completed Registrations</h5>
+                            <h2 class="display-4">{{ registered_count }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-registrations Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Unique ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Registered At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registration in pre_registrations %}
+                                <tr>
+                                    <td><code>{{ registration.unique_id }}</code></td>
+                                    <td>{{ registration.full_name }}</td>
+                                    <td>{{ registration.email }}</td>
+                                    <td>{{ registration.get_role_display }}</td>
+                                    <td>
+                                        {% if registration.is_registered %}
+                                            <span class="badge bg-success">Registered</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ registration.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if registration.registered_at %}
+                                            {{ registration.registered_at|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if registration.is_registered %}
+                                            <form method="post" action="{% url 'reset_pre_registration' registration.unique_id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Reset Registration">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <form method="post" action="{% url 'revoke_pre_registration' registration.unique_id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Revoke Registration">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Add Pre-registration Modal -->
+<div class="modal fade" id="addPreRegistrationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Pre-registration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select" required>
+                            <option value="member">Member</option>
+                            <option value="trainer">Trainer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    margin: 0.2rem 0;
+    border-radius: 0.25rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    background-color: #ffd700;
+    color: #000 !important;
+}
+
+main {
+    padding-top: 48px;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        padding-top: 0;
+    }
+    main {
+        padding-top: 0;
+    }
+}
+</style>
+{% endblock %} 

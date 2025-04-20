@@ -1,0 +1,1320 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <!-- Sticky Navigation -->
+    <nav class="admin-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{% url 'admin_dashboard' %}" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#trainers">
+                    <i class="fas fa-users"></i> Trainers
+                </a>
+                <a href="#members">
+                    <i class="fas fa-user-friends"></i> Members
+                </a>
+                <a href="#plans">
+                    <i class="fas fa-clipboard-list"></i> Plans
+                </a>
+                <a href="#reports">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+                <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome, {{ user.get_full_name|default:user.username }}</h1>
+            
+        </div>
+
+        <!-- Dashboard Overview Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ members.count }}</h3>
+                    <p>Total Members</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ trainers.count }}</h3>
+                    <p>Total Trainers</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ plans.count }}</h3>
+                    <p>Active Plans</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trainer Management Section -->
+        <section id="trainers" class="section">
+            <div class="section-header">
+                <h2>Trainer Management</h2>
+                <a href="{% url 'add_trainer' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Trainer
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Profile</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Experience</th>
+                            <th>Assigned Members</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trainer in trainers %}
+                        <tr data-trainer-id="{{ trainer.id }}">
+                            <td>
+                                <div class="member-info">
+                                    <div class="member-avatar">
+                                        {% if trainer.user.profile_picture %}
+                                            <img src="{{ trainer.user.profile_picture.url }}" alt="{{ trainer.user.username }}">
+                                        {% else %}
+                                            <i class="fas fa-user"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ trainer.user.username }}</td>
+                            <td>
+                                <span class="plan-badge">{{ trainer.specialization }}</span>
+                            </td>
+                            <td>{{ trainer.experience_years }} years</td>
+                            <td>
+                                <div class="member-count">
+                                    {% if trainer.member_set.all %}
+                                        <div class="assigned-members">
+                                            {% for member in trainer.member_set.all %}
+                                                <span class="badge bg-info me-1">{{ member.user.get_full_name|default:member.user.username }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No members assigned</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'edit_trainer' trainer.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteTrainer({{ trainer.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No trainers found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Member Management Section -->
+        <section id="members" class="section">
+            <div class="section-header">
+                <h2>Member Management</h2>
+                <a href="{% url 'add_member' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Member
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Plan</th>
+                            <th>Trainer</th>
+                            <th>Join Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr data-member-id="{{ member.id }}">
+                            <td>{{ member.user.get_full_name|default:member.user.username }}</td>
+                            <td>
+                                <span class="plan-badge">{{ member.membership_plan.name|default:"No Plan" }}</span>
+                            </td>
+                            <td>
+                                {% if member.assigned_trainer and member.assigned_trainer.user %}
+                                    {{ member.assigned_trainer.user.get_full_name|default:member.assigned_trainer.user.username }}
+                                {% else %}
+                                    <span class="text-muted">Not Assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ member.membership_start_date }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'edit_member' member.id %}" class="btn btn-sm btn-info" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteMember({{ member.id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Membership Plans Section -->
+        <section id="plans" class="section">
+            <div class="section-header">
+                <h2>Membership Plans</h2>
+                <a href="{% url 'add_plan' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Plan
+                </a>
+            </div>
+            <div class="row g-4">
+                {% for plan in plans %}
+                <div class="col-md-4" data-plan-id="{{ plan.id }}">
+                    <div class="plan-card">
+                        <div class="card-header">
+                            <h5 class="card-title">{{ plan.name }}</h5>
+                            <div class="price">
+                                <span class="currency">₹</span>
+                                <span class="amount">{{ plan.price }}</span>
+                                <span class="period">/month</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ plan.description }}</p>
+                            <div class="features-list">
+                                {{ plan.features|linebreaks }}
+                            </div>
+                            <div class="duration-badge">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ plan.duration_days }} days
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <a href="{% url 'edit_plan' plan.id %}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <button class="btn btn-danger btn-sm" onclick="deletePlan({{ plan.id }})">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                                <span class="badge bg-info">
+                                    {{ plan.member_set.count }} members
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h4>No Plans Available</h4>
+                        <p class="text-muted">Add your first membership plan to get started.</p>
+                        <a href="{% url 'add_plan' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Plan
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Reports & Analytics Section -->
+        <section id="reports" class="section">
+            <div class="section-header">
+                <h2>Reports & Analytics</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Member Growth</h3>
+                        <canvas id="memberGrowthChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h3>Plan Distribution</h3>
+                        <canvas id="planDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Add Trainer Modal -->
+<div class="modal fade" id="addTrainerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Trainer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTrainerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Specialization</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact</label>
+                        <input type="tel" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Profile Picture</label>
+                        <input type="file" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addTrainerForm" class="btn btn-primary">Add Trainer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm" method="POST" action="{% url 'add_member' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control bg-dark text-light" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control bg-dark text-light" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Membership Plan</label>
+                        <select class="form-select bg-dark text-light" name="membership_plan" required>
+                            <option value="">Select Plan</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign Trainer</label>
+                        <select class="form-select bg-dark text-light" name="assigned_trainer">
+                            <option value="">Select Trainer</option>
+                            {% for trainer in trainers %}
+                            <option value="{{ trainer.id }}">{{ trainer.user.get_full_name|default:trainer.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addMemberForm" class="btn btn-primary">Add Member</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Plan Modal -->
+<div class="modal fade" id="editPlanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPlanForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan_id" id="edit_plan_id">
+                    <div class="mb-3">
+                        <label class="form-label">Plan Name</label>
+                        <input type="text" class="form-control" name="name" id="edit_plan_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duration (days)</label>
+                        <input type="number" class="form-control" name="duration_days" id="edit_plan_duration" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" name="price" id="edit_plan_price" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="edit_plan_description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Features</label>
+                        <textarea class="form-control" name="features" id="edit_plan_features" rows="4" required></textarea>
+                        <small class="text-muted">Enter each feature on a new line</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="editPlanForm" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Membership Plan</label>
+                        <select class="form-select" name="membership_plan">
+                            <option value="">Select Plan</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign Trainer</label>
+                        <select class="form-select" name="assigned_trainer">
+                            <option value="">Select Trainer</option>
+                            {% for trainer in trainers %}
+                            <option value="{{ trainer.id }}">{{ trainer.user.get_full_name|default:trainer.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="is_active" id="edit_is_active">
+                            <label class="form-check-label" for="edit_is_active">Active</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="editMemberForm" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Admin Dashboard Styles */
+.admin-dashboard {
+    min-height: 100vh;
+    background-color: #121212;
+    color: #f8f9fa;
+}
+
+/* Navigation */
+.admin-nav {
+    background-color: #000000;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-brand a {
+    color: var(--gold-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.nav-brand a i {
+    margin-right: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: #f8f9fa;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s;
+}
+
+.nav-links a i {
+    margin-right: 0.5rem;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--gold-primary);
+}
+
+/* Main Content */
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    color: var(--gold-primary);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-section .date {
+    color: #adb5bd;
+    font-size: 1rem;
+}
+
+/* Stats Cards */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    background-color: rgba(198, 169, 98, 0.1);
+    color: var(--gold-primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    color: #f8f9fa;
+}
+
+.stat-content p {
+    color: #adb5bd;
+    margin-bottom: 0;
+}
+
+/* Section Styles */
+.section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    color: var(--gold-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* Table Styles */
+.members-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.members-table th {
+    background-color: #2a2a2a;
+    color: var(--gold-primary);
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+}
+
+.members-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.members-table tr:hover {
+    background-color: #2a2a2a;
+}
+
+/* Member Info */
+.member-info {
+    display: flex;
+    align-items: center;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    overflow: hidden;
+}
+
+.member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Plan Badge */
+.plan-badge {
+    background-color: rgba(198, 169, 98, 0.1);
+    color: var(--gold-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+}
+
+/* Plan Card */
+.plan-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.plan-card .card-header {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.plan-card .card-title {
+    color: #000000;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.plan-card .price {
+    color: #000000;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.plan-card .card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.plan-card .features-list {
+    color: #adb5bd;
+    margin: 1rem 0;
+}
+
+.plan-card .duration-badge {
+    background-color: rgba(198, 169, 98, 0.1);
+    color: var(--gold-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.plan-card .card-footer {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-top: 1px solid rgba(198, 169, 98, 0.1);
+}
+
+/* Chart Container */
+.chart-container {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    height: 300px;
+}
+
+.chart-container h3 {
+    color: var(--gold-primary);
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    border: none;
+    color: #000000;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #DAA520, #C6A962);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(198, 169, 98, 0.3);
+}
+
+.btn-info {
+    background-color: rgba(198, 169, 98, 0.1);
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-primary);
+}
+
+.btn-info:hover {
+    background-color: var(--gold-primary);
+    color: #000000;
+}
+
+.btn-danger {
+    background-color: #742a2a;
+    border: none;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.5em 1em;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #2D6A4F, #40916C) !important;
+    color: #f8f9fa;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #771D1D, #9B2C2C) !important;
+    color: #f8f9fa;
+}
+
+/* Modal Styles */
+.modal-content {
+    background-color: #1e1e1e;
+    border: 1px solid rgba(198, 169, 98, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    color: #000000;
+}
+
+.modal-body {
+    color: #f8f9fa;
+}
+
+.form-control, .form-select {
+    background-color: #2a2a2a;
+    border: 1px solid rgba(198, 169, 98, 0.2);
+    color: #f8f9fa;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #2a2a2a;
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 0.2rem rgba(198, 169, 98, 0.25);
+    color: #f8f9fa;
+}
+
+.form-label {
+    color: #f8f9fa;
+    font-weight: 500;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-links {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+    
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Member Growth Chart
+const memberGrowthCtx = document.getElementById('memberGrowthChart').getContext('2d');
+new Chart(memberGrowthCtx, {
+    type: 'line',
+    data: {
+        labels: {{ member_growth_labels|safe }},
+        datasets: [{
+            label: 'New Members',
+            data: {{ member_growth|safe }},
+            borderColor: '#ffd700',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Plan Distribution Chart
+const planDistributionCtx = document.getElementById('planDistributionChart').getContext('2d');
+new Chart(planDistributionCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ plan_names|safe }},
+        datasets: [{
+            data: {{ plan_distribution|safe }},
+            backgroundColor: [
+                '#4B0082',  // Indigo
+                '#6A5ACD',  // Slate Blue
+                '#483D8B',  // Dark Slate Blue
+                '#7B68EE',  // Medium Slate Blue
+                '#9370DB',  // Medium Purple
+                '#8A2BE2'   // Blue Violet
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    color: '#f8f9fa',
+                    font: {
+                        size: 11
+                    },
+                    boxWidth: 15
+                }
+            }
+        },
+        layout: {
+            padding: {
+                left: 10,
+                right: 10,
+                top: 0,
+                bottom: 0
+            }
+        }
+    }
+});
+
+// Remove the Trainer Performance Chart since we don't have real metrics for it
+const trainerPerformanceChart = document.getElementById('trainerPerformanceChart');
+if (trainerPerformanceChart) {
+    trainerPerformanceChart.parentElement.parentElement.parentElement.remove();
+}
+
+function deleteTrainer(trainerId) {
+    if (confirm('Are you sure you want to delete this trainer? This action cannot be undone.')) {
+        fetch(`/dashboard/admin/trainers/${trainerId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the row with animation
+                const row = document.querySelector(`tr[data-trainer-id="${trainerId}"]`);
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-100%)';
+                    setTimeout(() => {
+                        row.remove();
+                        // Update total trainers count
+                        const totalTrainersElement = document.querySelector('.display-4');
+                        if (totalTrainersElement) {
+                            const currentCount = parseInt(totalTrainersElement.textContent);
+                            totalTrainersElement.textContent = currentCount - 1;
+                        }
+                    }, 300);
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                }
+            } else {
+                showNotification(data.message || 'Error deleting trainer', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting trainer', 'error');
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 150);
+    }, 5000);
+}
+
+function editPlan(planId) {
+    // Fetch plan details
+    fetch(`/dashboard/admin/plans/${planId}/edit/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const plan = data.plan;
+                document.getElementById('edit_plan_id').value = plan.id;
+                document.getElementById('edit_plan_name').value = plan.name;
+                document.getElementById('edit_plan_duration').value = plan.duration_days;
+                document.getElementById('edit_plan_price').value = plan.price;
+                document.getElementById('edit_plan_description').value = plan.description;
+                document.getElementById('edit_plan_features').value = plan.features;
+                
+                // Update form action
+                document.getElementById('editPlanForm').action = `/dashboard/admin/plans/${planId}/edit/`;
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('editPlanModal')).show();
+            } else {
+                showNotification(data.message || 'Error loading plan details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error loading plan details', 'error');
+        });
+}
+
+function editMember(memberId) {
+    // Fetch member details
+    fetch(`/dashboard/admin/members/${memberId}/edit/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const member = data.member;
+                const form = document.getElementById('editMemberForm');
+                
+                // Set form action
+                form.action = `/dashboard/admin/members/${memberId}/edit/`;
+                
+                // Fill form fields
+                form.querySelector('[name="name"]').value = member.name;
+                form.querySelector('[name="email"]').value = member.email;
+                form.querySelector('[name="phone"]').value = member.phone;
+                form.querySelector('[name="membership_plan"]').value = member.plan_id || '';
+                form.querySelector('[name="assigned_trainer"]').value = member.trainer_id || '';
+                form.querySelector('[name="is_active"]').checked = member.is_active;
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('editMemberModal')).show();
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error loading member details', 'error');
+        });
+}
+
+function deleteMember(memberId) {
+    if (confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+        fetch(`/dashboard/admin/members/${memberId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the row with animation
+                const row = document.querySelector(`tr[data-member-id="${memberId}"]`);
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-100%)';
+                    setTimeout(() => {
+                        row.remove();
+                        
+                        // Update total members count
+                        const totalMembersElement = document.querySelector('.stats-cards .stat-card:first-child .stat-content h3');
+                        if (totalMembersElement) {
+                            const currentCount = parseInt(totalMembersElement.textContent);
+                            totalMembersElement.textContent = currentCount - 1;
+                        }
+                        
+                        // Show success notification
+                        showNotification('Member deleted successfully', 'success');
+                    }, 300);
+                }
+            } else {
+                showNotification(data.message || 'Error deleting member', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting member', 'error');
+        });
+    }
+}
+
+// Handle Add Member form submission
+document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    submitBtn.disabled = true;
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Add new row to the table
+            const tbody = document.querySelector('#members .members-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-member-id', data.member.id);
+            newRow.innerHTML = `
+                <td>${data.member.name}</td>
+                <td><span class="plan-badge">${data.member.plan || 'No Plan'}</span></td>
+                <td>${data.member.trainer || '<span class="text-muted">Not Assigned</span>'}</td>
+                <td>${new Date().toLocaleDateString()}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-info" onclick="editMember(${data.member.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMember(${data.member.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.insertBefore(newRow, tbody.firstChild);
+            
+            // Update stats card for total members
+            const totalMembersElement = document.querySelector('.stats-cards .stat-card:first-child .stat-content h3');
+            if (totalMembersElement) {
+                const currentCount = parseInt(totalMembersElement.textContent);
+                totalMembersElement.textContent = currentCount + 1;
+            }
+            
+            // Show success message
+            showNotification('Member added successfully!', 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
+            modal.hide();
+            
+            // Reset form
+            this.reset();
+        } else {
+            showNotification(data.message || 'Error adding member', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error adding member', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Handle Edit Member form submission
+document.getElementById('editMemberForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Update the member row in the table
+            const row = document.querySelector(`tr[data-member-id="${data.member.id}"]`);
+            if (row) {
+                row.innerHTML = `
+                    <td>${data.member.name}</td>
+                    <td>
+                        <span class="plan-badge">${data.member.plan}</span>
+                    </td>
+                    <td>${data.member.trainer || '<span class="text-muted">Not Assigned</span>'}</td>
+                    <td>${row.children[3].textContent}</td>
+                    <td>
+                        <span class="badge bg-${data.member.is_active ? 'success' : 'danger'}">
+                            ${data.member.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-info" onclick="editMember(${data.member.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMember(${data.member.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            }
+            
+            // Show success message
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editMemberModal'));
+            modal.hide();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating member', 'error');
+    });
+});
+
+// Add this to your existing JavaScript
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true 
+    });
+    document.getElementById('current-time').textContent = timeString;
+}
+
+// Update time every second
+setInterval(updateTime, 1000);
+updateTime(); // Initial call
+
+function deletePlan(planId) {
+    if (confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
+        fetch(`/dashboard/admin/plans/${planId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the plan card with animation
+                const planCard = document.querySelector(`[data-plan-id="${planId}"]`);
+                if (planCard) {
+                    planCard.style.transition = 'all 0.3s ease';
+                    planCard.style.opacity = '0';
+                    planCard.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        planCard.remove();
+                    }, 300);
+                }
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.message || 'Error deleting plan', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting plan', 'error');
+        });
+    }
+}
+</script>
+{% endblock %} 

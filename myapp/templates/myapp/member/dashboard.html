@@ -1,0 +1,757 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Member Dashboard - Oxen Fitness{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/workout_plans.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="member-dashboard">
+    <!-- Sticky Navigation -->
+    <nav class="member-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{% url 'member_dashboard' %}" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#workout-plans-section">
+                    <i class="fas fa-dumbbell"></i> Workout Plans
+                </a>
+                <a href="{% url 'book_session' %}">
+                    <i class="fas fa-calendar-plus"></i> Book Session
+                </a>
+                <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome, {{ member.user.get_full_name|default:member.user.username }}!</h1>
+            <p class="date">{{ today|date:"l, F j, Y" }}</p>
+        </div>
+
+        <!-- Dashboard Overview Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ trainer_info.name|default:"Not Assigned" }}</h3>
+                    <p>Your Trainer</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ workout_plans.count }}</h3>
+                    <p>Active Plans</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Membership Status Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Membership Status</h2>
+            </div>
+            <div class="membership-details">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <span class="label">Plan:</span>
+                            <span class="value">{{ membership_status.plan.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Valid Until:</span>
+                            <span class="value">{{ membership_status.end_date|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <span class="label">Status:</span>
+                            <span class="badge {% if membership_status.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ membership_status.is_active|yesno:"Active,Inactive" }}
+                            </span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: {{ membership_status.progress }}%">
+                                    {{ membership_status.progress }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trainer Information Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Trainer Information</h2>
+            </div>
+            {% if trainer_info %}
+            <div class="trainer-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <div class="info-content">
+                                <h4>Name</h4>
+                                <p>{{ trainer_info.name }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-star"></i>
+                            <div class="info-content">
+                                <h4>Specialization</h4>
+                                <p>{{ trainer_info.specialization }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div class="info-content">
+                                <h4>Email</h4>
+                                <p>{{ trainer_info.email }}</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <div class="info-content">
+                                <h4>Phone</h4>
+                                <p>{{ trainer_info.phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-tie"></i>
+                <p>No trainer assigned yet. Please contact the admin for assistance.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Workout Plans Section -->
+        <section id="workout-plans-section" class="section">
+            <div class="section-header">
+                <h2>Your Workout Plans</h2>
+            </div>
+            {% if workout_plans %}
+            <div class="workout-plans-grid">
+                {% for plan in workout_plans %}
+                <div class="workout-plan-card" data-plan-id="{{ plan.id }}">
+                    <div class="plan-header">
+                        <h3>{{ plan.title }}</h3>
+                        <div class="plan-meta">
+                            <span class="duration">
+                                <i class="fas fa-calendar-alt"></i> {{ plan.duration_weeks }} weeks
+                            </span>
+                            <span class="created-date">
+                                <i class="fas fa-clock"></i> Created: {{ plan.created_date|date:"M d, Y" }}
+                            </span>
+                        </div>
+                        <div class="target-goal">
+                            <i class="fas fa-bullseye"></i> {{ plan.target_goal }}
+                        </div>
+                    </div>
+                    
+                    <div class="day-selector">
+                        {% if plan.exercises %}
+                            {% for day, day_data in plan.exercises.items %}
+                                {% if day_data.exercises %}
+                                <button class="day-select-btn" data-day="{{ day|lower }}-{{ plan.id }}">
+                                    <i class="fas fa-calendar-day"></i> {{ day }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="day-wise-schedule">
+                        {% if plan.exercises %}
+                            {% for day, day_data in plan.exercises.items %}
+                                {% if day_data.exercises %}
+                                <div class="day-schedule" id="day-{{ day|lower }}-{{ plan.id }}" style="display: none;">
+                                    <div class="day-header">
+                                        <h4><i class="fas fa-calendar-day"></i> {{ day }}</h4>
+                                    </div>
+                                    <div class="exercises-list">
+                                        {% for exercise in day_data.exercises %}
+                                        <div class="exercise-item">
+                                            <div class="exercise-name">{{ exercise.name }}</div>
+                                            <div class="exercise-details">
+                                                <span><i class="fas fa-layer-group"></i> {{ exercise.sets }} sets</span>
+                                                <span><i class="fas fa-repeat"></i> {{ exercise.reps }} reps</span>
+                                                {% if exercise.rest %}
+                                                <span><i class="fas fa-clock"></i> {{ exercise.rest }}s rest</span>
+                                                {% endif %}
+                                                {% if exercise.weight %}
+                                                <span><i class="fas fa-weight"></i> {{ exercise.weight }}kg</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-days">
+                                <p>No workout days defined for this plan</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-dumbbell"></i>
+                <p>No workout plans assigned yet. Your trainer will create a plan for you soon.</p>
+            </div>
+            {% endif %}
+        </section>
+
+      
+    </div>
+</div>
+
+<style>
+/* Member Dashboard Styles */
+.member-dashboard {
+    min-height: 100vh;
+    background-color: #121212;
+    color: #f8f9fa;
+}
+
+/* Navigation */
+.member-nav {
+    background-color: #000000;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-brand a {
+    color: var(--gold-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.nav-brand a i {
+    margin-right: 0.5rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: #f8f9fa;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s;
+}
+
+.nav-links a i {
+    margin-right: 0.5rem;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--gold-primary);
+}
+
+/* Main Content */
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    color: var(--gold-primary);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-section .date {
+    color: #adb5bd;
+    font-size: 1rem;
+}
+
+/* Stats Cards */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    background-color: rgba(198, 169, 98, 0.1);
+    color: var(--gold-primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    color: #f8f9fa;
+}
+
+.stat-content p {
+    color: #adb5bd;
+    margin-bottom: 0;
+}
+
+/* Section Styles */
+.section {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    color: var(--gold-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* Membership Details */
+.membership-details {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item .label {
+    color: #adb5bd;
+    margin-right: 0.5rem;
+}
+
+.detail-item .value {
+    color: #f8f9fa;
+    font-weight: 500;
+}
+
+/* Progress Bar */
+.progress-container {
+    margin-top: 1rem;
+}
+
+.progress {
+    height: 8px;
+    background-color: #2a2a2a;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--gold-primary);
+    height: 100%;
+}
+
+/* Trainer Info */
+.trainer-info {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.info-item i {
+    color: var(--gold-primary);
+    font-size: 1.25rem;
+    margin-right: 1rem;
+    margin-top: 0.25rem;
+}
+
+.info-content h4 {
+    color: #adb5bd;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.info-content p {
+    color: #f8f9fa;
+    margin-bottom: 0;
+}
+
+/* Workout Plans Grid */
+.workout-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Plan Card */
+.workout-plan-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    max-height: 600px;
+}
+
+.workout-plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Plan Header */
+.plan-header {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    padding: 1.5rem;
+    color: #000000;
+}
+
+.plan-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.plan-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.plan-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.target-goal {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #000000;
+    font-weight: 500;
+    margin-top: 0.75rem;
+}
+
+/* Day-wise Schedule */
+.day-wise-schedule {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+    max-height: 400px;
+}
+
+.day-schedule {
+    background: #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.day-schedule:last-child {
+    margin-bottom: 0;
+}
+
+.day-header {
+    background: rgba(198, 169, 98, 0.1);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-header h4 {
+    margin: 0;
+    color: var(--gold-primary);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Exercises List */
+.exercises-list {
+    padding: 1rem;
+}
+
+.exercise-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+.exercise-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.exercise-item:last-child {
+    border-bottom: none;
+}
+
+.exercise-name {
+    color: #f8f9fa;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.exercise-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #adb5bd;
+}
+
+.exercise-details span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.exercise-details i {
+    color: var(--gold-primary);
+}
+
+/* Sessions Grid */
+.sessions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.session-card {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.session-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.session-date {
+    background-color: var(--gold-primary);
+    color: #000000;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    min-width: 80px;
+}
+
+.session-date .day {
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: block;
+}
+
+.session-date .month {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.session-details h4 {
+    color: var(--gold-primary);
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.session-details p {
+    color: #adb5bd;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.session-details i {
+    margin-right: 0.5rem;
+    color: var(--gold-primary);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #2a2a2a;
+    border-radius: 8px;
+    color: #adb5bd;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--gold-primary);
+}
+
+.empty-state p {
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .workout-plans-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sessions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .day-selector {
+        padding: 0.75rem;
+    }
+    
+    .day-select-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .exercise-details {
+        gap: 0.5rem;
+    }
+
+    .plan-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .created-date {
+        font-size: 0.8rem;
+    }
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize day selection for each workout plan
+    const workoutPlans = document.querySelectorAll('.workout-plan-card');
+    
+    workoutPlans.forEach(plan => {
+        const dayButtons = plan.querySelectorAll('.day-select-btn');
+        const daySchedules = plan.querySelectorAll('.day-schedule');
+        
+        // Show first day by default
+        if (daySchedules.length > 0) {
+            daySchedules[0].style.display = 'block';
+            dayButtons[0].classList.add('active');
+        }
+        
+        // Add click handlers for day selection
+        dayButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                // Hide all day schedules
+                daySchedules.forEach(schedule => {
+                    schedule.style.display = 'none';
+                });
+                
+                // Remove active class from all buttons
+                dayButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show selected day schedule
+                daySchedules[index].style.display = 'block';
+                button.classList.add('active');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

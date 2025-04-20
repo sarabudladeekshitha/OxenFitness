@@ -1,0 +1,101 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}{% if member %}Edit Member{% else %}Add New Member{% endif %} - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-dark text-light min-vh-100 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-gradient-gold">
+                    <h3 class="card-title text-dark mb-0">{% if member %}Edit Member{% else %}Add New Member{% endif %}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="memberForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control bg-dark text-light" id="name" name="name" value="{{ member.user.get_full_name|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-dark text-light" id="email" name="email" value="{{ member.user.email|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control bg-dark text-light" id="phone" name="phone" value="{{ member.user.phone_number|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="membership_plan" class="form-label">Membership Plan</label>
+                            <select class="form-select bg-dark text-light" id="membership_plan" name="membership_plan" required>
+                                <option value="">Select Plan</option>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" {% if member.membership_plan.id == plan.id %}selected{% endif %}>
+                                    {{ plan.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assigned_trainer" class="form-label">Assign Trainer</label>
+                            <select class="form-select bg-dark text-light" id="assigned_trainer" name="assigned_trainer">
+                                <option value="">Select Trainer</option>
+                                {% for trainer in trainers %}
+                                <option value="{{ trainer.id }}" {% if member.assigned_trainer.id == trainer.id %}selected{% endif %}>
+                                    {{ trainer.user.get_full_name|default:trainer.user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if member %}
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if member.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">Active Member</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if member %}Save Changes{% else %}Add Member{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-gold {
+    border: 1px solid var(--gold-primary);
+}
+
+.bg-gradient-gold {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+}
+
+.form-control, .form-select {
+    border: 1px solid rgba(198, 169, 98, 0.2);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 0.25rem rgba(198, 169, 98, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #C6A962, #DAA520);
+    border: none;
+    color: #000;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #DAA520, #C6A962);
+    color: #000;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,137 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}About Us - Oxen Fitness{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section position-relative">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative">
+        <div class="row min-vh-50 align-items-center">
+            <div class="col-lg-8 text-white">
+                <h1 class="display-4 fw-bold mb-4">About Oxen Fitness</h1>
+                <p class="lead mb-4">Your journey to fitness excellence starts here. We're committed to helping you achieve your goals.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Story Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Our Story" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="mb-4">Our Story</h2>
+                <p class="lead mb-4">Founded in 2020, Oxen Fitness has grown from a small local gym to a premier fitness destination.</p>
+                <p>Our journey began with a simple mission: to provide a welcoming, inclusive environment where people of all fitness levels could achieve their goals. Today, we're proud to serve thousands of members who trust us with their fitness journey.</p>
+                <p>We believe in continuous improvement and staying at the forefront of fitness trends and technology. Our facility is regularly updated with the latest equipment and our trainers undergo ongoing professional development.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Values</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-heart fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Community</h3>
+                        <p class="text-muted">We foster a supportive environment where everyone feels welcome and encouraged to achieve their goals.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-star fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Excellence</h3>
+                        <p class="text-muted">We strive for excellence in everything we do, from equipment maintenance to member service.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-handshake fa-3x text-primary mb-3"></i>
+                        <h3 class="h5">Integrity</h3>
+                        <p class="text-muted">We maintain the highest standards of honesty and transparency in all our operations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Facilities Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Facilities</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="card-img-top" alt="Gym Equipment">
+                    <div class="card-body">
+                        <h3 class="h5">Modern Equipment</h3>
+                        <p class="text-muted">State-of-the-art fitness equipment for all your workout needs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="card-img-top" alt="Group Classes">
+                    <div class="card-body">
+                        <h3 class="h5">Group Classes</h3>
+                        <p class="text-muted">Spacious studios for group fitness classes and personal training.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 50vh;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    height: 300px;
+    object-fit: cover;
+}
+
+.text-primary {
+    color: #ffd700 !important;
+}
+</style>
+{% endblock %} 

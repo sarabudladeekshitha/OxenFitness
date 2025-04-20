@@ -1,0 +1,744 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Manage Members - TEST CHANGE - Oxen Fitness{% endblock %}
+
+{% block extra_css %}
+<style>
+.sidebar {
+    min-height: 100vh;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+}
+
+.sidebar .nav-link.active {
+    color: #007bff;
+}
+
+.btn-primary {
+    background-color: #ffd700;
+    border-color: #ffd700;
+    color: #000;
+}
+
+.btn-primary:hover {
+    background-color: #ffed4a;
+    border-color: #ffed4a;
+    color: #000;
+}
+
+.card {
+    transition: transform .2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.125rem;
+}
+
+.modal-content.bg-dark {
+    background-color: #1a1a1a !important;
+}
+
+.modal-header, .modal-footer {
+    border-color: #2d2d2d !important;
+}
+
+.form-control.bg-dark, .form-select.bg-dark {
+    background-color: #2d2d2d !important;
+    border-color: #3d3d3d !important;
+    color: #fff !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.form-control.bg-dark:focus, .form-select.bg-dark:focus {
+    background-color: #2d2d2d !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25) !important;
+    color: #fff !important;
+}
+
+.form-control.bg-dark::placeholder {
+    color: #6c757d !important;
+    opacity: 1 !important;
+}
+
+.form-select.bg-dark option {
+    background-color: #2d2d2d !important;
+    color: #fff !important;
+}
+
+.btn-primary {
+    background-color: #ffd700 !important;
+    border-color: #ffd700 !important;
+    color: #000 !important;
+}
+
+.btn-primary:hover {
+    background-color: #ffed4a !important;
+    border-color: #ffed4a !important;
+}
+
+.btn-secondary {
+    background-color: #3d3d3d !important;
+    border-color: #3d3d3d !important;
+    color: #fff !important;
+}
+
+.btn-secondary:hover {
+    background-color: #4d4d4d !important;
+    border-color: #4d4d4d !important;
+}
+
+.modal-title {
+    color: #ffd700 !important;
+}
+
+.form-label {
+    color: #fff !important;
+    margin-bottom: 0.5rem;
+}
+
+.alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.alert-error {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Ensure form inputs are not disabled */
+.modal input:not([type="submit"]):not([disabled]),
+.modal select:not([disabled]),
+.modal textarea:not([disabled]) {
+    pointer-events: auto !important;
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
+    background-color: #2d2d2d !important;
+}
+
+/* Remove any disabled styles */
+.modal input:not([type="submit"]):not([disabled]):not(:disabled),
+.modal select:not([disabled]):not(:disabled),
+.modal textarea:not([disabled]):not(:disabled) {
+    opacity: 1 !important;
+    cursor: text !important;
+}
+
+/* Style for select dropdowns */
+.form-select:not([disabled]) {
+    cursor: pointer !important;
+}
+
+/* Ensure modals are interactive */
+.modal {
+    pointer-events: auto !important;
+}
+
+.modal-dialog {
+    pointer-events: auto !important;
+}
+
+.modal-content {
+    pointer-events: auto !important;
+}
+
+/* Add focus styles for better visibility */
+.form-control:focus, .form-select:focus {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25) !important;
+}
+
+/* Ensure buttons are clickable */
+.btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Style for active/focused form elements */
+.form-control:active,
+.form-control:focus,
+.form-select:active,
+.form-select:focus {
+    border-color: #ffd700 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'admin_dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active text-white" href="{% url 'manage_members' %}">
+                            <i class="fas fa-users"></i> Members
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'manage_trainers' %}">
+                            <i class="fas fa-user-tie"></i> Trainers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'manage_plans' %}">
+                            <i class="fas fa-clipboard-list"></i> Plans
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'manage_payments' %}">
+                            <i class="fas fa-money-bill-wave"></i> Payments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Manage Members</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                        <i class="fas fa-plus"></i> Add New Member
+                    </button>
+                </div>
+            </div>
+
+            <!-- Members Table -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Age</th>
+                                    <th>Weight</th>
+                                    <th>Membership Plan</th>
+                                    <th>Trainer</th>
+                                    <th>Status</th>
+                                    <th>Join Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                <tr data-member-id="{{ member.id }}">
+                                    <td>{{ member.user.get_full_name }}</td>
+                                    <td>{{ member.user.email }}</td>
+                                    <td>{{ member.user.phone_number }}</td>
+                                    <td>{{ member.user.age|default:'-' }} years</td>
+                                    <td>{{ member.user.weight|default:'-' }} kg</td>
+                                    <td>{{ member.membership_plan.name }}</td>
+                                    <td>
+                                        {% if member.assigned_trainer and member.assigned_trainer.user %}
+                                            {{ member.assigned_trainer.user.get_full_name|default:member.assigned_trainer.user.username }}
+                                        {% else %}
+                                            <span class="text-muted">Not Assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if member.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ member.user.date_joined|date }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="viewMember({{ member.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" onclick="editMember({{ member.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteMember({{ member.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" role="dialog" aria-labelledby="addMemberModalLabel">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title" id="addMemberModalLabel">Add New Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm" method="POST" action="{% url 'add_member' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" id="phone" name="phone" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" id="age" name="age" min="1" max="120">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="weight" class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" id="weight" name="weight" min="1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="membership_plan" class="form-label">Membership Plan</label>
+                        <select class="form-select bg-dark text-light border-secondary" id="membership_plan" name="membership_plan" required>
+                            <option value="">Select Plan</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assigned_trainer" class="form-label">Assign Trainer</label>
+                        <select class="form-select bg-dark text-light border-secondary" id="assigned_trainer" name="assigned_trainer">
+                            <option value="">Select Trainer</option>
+                            {% for trainer in trainers %}
+                            <option value="{{ trainer.id }}">{{ trainer.user.get_full_name|default:trainer.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addMemberForm" class="btn btn-primary">Add Member</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title">Edit Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control bg-dark text-light border-secondary" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control bg-dark text-light border-secondary" name="phone" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" name="age" min="1" max="120">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" name="weight" min="1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Membership Plan</label>
+                        <select class="form-select bg-dark text-light border-secondary" name="membership_plan">
+                            <option value="">Select Plan</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Assign Trainer</label>
+                        <select class="form-select bg-dark text-light border-secondary" name="assigned_trainer">
+                            <option value="">Select Trainer</option>
+                            {% for trainer in trainers %}
+                            <option value="{{ trainer.id }}">{{ trainer.user.get_full_name|default:trainer.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="is_active" id="edit_is_active">
+                            <label class="form-check-label" for="edit_is_active">Active</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="editMemberForm" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap components
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Initialize modals
+    const addMemberModal = new bootstrap.Modal(document.getElementById('addMemberModal'));
+    const editMemberModal = new bootstrap.Modal(document.getElementById('editMemberModal'));
+    
+    // Clear form fields when opening Add Member modal
+    document.getElementById('addMemberModal').addEventListener('show.bs.modal', function() {
+        const form = document.getElementById('addMemberForm');
+        form.reset();
+        // Remove any disabled attributes that might have been added
+        form.querySelectorAll('input, select').forEach(element => {
+            element.disabled = false;
+            element.readOnly = false;
+        });
+    });
+    
+    // Clear form fields when opening Edit Member modal
+    document.getElementById('editMemberModal').addEventListener('show.bs.modal', function() {
+        const form = document.getElementById('editMemberForm');
+        // Remove any disabled attributes that might have been added
+        form.querySelectorAll('input, select').forEach(element => {
+            element.disabled = false;
+            element.readOnly = false;
+        });
+    });
+
+    // Add data-member-id attribute to all member rows
+    const memberRows = document.querySelectorAll('.table tbody tr');
+    memberRows.forEach(row => {
+        const deleteBtn = row.querySelector('.btn-danger');
+        if (deleteBtn) {
+            const memberId = deleteBtn.getAttribute('onclick').match(/\d+/)[0];
+            row.setAttribute('data-member-id', memberId);
+        }
+    });
+});
+
+function viewMember(id) {
+    // Implement view member functionality
+    console.log('View member:', id);
+}
+
+function editMember(memberId) {
+    // Fetch member details
+    fetch(`/dashboard/admin/members/${memberId}/edit/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const member = data.member;
+                const form = document.getElementById('editMemberForm');
+                
+                // Set form action
+                form.action = `/dashboard/admin/members/${memberId}/edit/`;
+                
+                // Fill form fields
+                form.querySelector('[name="name"]').value = member.name;
+                form.querySelector('[name="email"]').value = member.email;
+                form.querySelector('[name="phone"]').value = member.phone;
+                form.querySelector('[name="age"]').value = member.age || '';
+                form.querySelector('[name="weight"]').value = member.weight || '';
+                form.querySelector('[name="membership_plan"]').value = member.plan_id || '';
+                form.querySelector('[name="assigned_trainer"]').value = member.trainer_id || '';
+                form.querySelector('[name="is_active"]').checked = member.is_active;
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('editMemberModal')).show();
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error loading member details', 'error');
+        });
+}
+
+function deleteMember(id) {
+    if (confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+        fetch(`/dashboard/admin/members/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the row with animation
+                const row = document.querySelector(`tr[data-member-id="${id}"]`);
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(-100%)';
+                    setTimeout(() => {
+                        row.remove();
+                    }, 300);
+                }
+                showNotification(data.message, 'success');
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting member', 'error');
+        });
+    }
+}
+
+// Handle Add Member form submission
+document.getElementById('addMemberForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    submitBtn.disabled = true;
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Add new row to the table
+            const tbody = document.querySelector('.table tbody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-member-id', data.member.id);
+            newRow.innerHTML = `
+                <td>${data.member.name}</td>
+                <td>${data.member.email}</td>
+                <td>${data.member.phone}</td>
+                <td>${data.member.age ? data.member.age + ' years' : '-'}</td>
+                <td>${data.member.weight ? data.member.weight + ' kg' : '-'}</td>
+                <td>${data.member.plan}</td>
+                <td>${data.member.trainer || '<span class="text-muted">Not Assigned</span>'}</td>
+                <td><span class="badge bg-success">Active</span></td>
+                <td>${new Date().toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewMember(${data.member.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="editMember(${data.member.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMember(${data.member.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.insertBefore(newRow, tbody.firstChild);
+            
+            // Show success message
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
+            modal.hide();
+            
+            // Reset form
+            this.reset();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error adding member', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Handle Edit Member form submission
+document.getElementById('editMemberForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Update the member row in the table
+            const row = document.querySelector(`tr[data-member-id="${data.member.id}"]`);
+            if (row) {
+                row.innerHTML = `
+                    <td>${data.member.name}</td>
+                    <td>${data.member.email}</td>
+                    <td>${data.member.phone}</td>
+                    <td>${data.member.age ? data.member.age + ' years' : '-'}</td>
+                    <td>${data.member.weight ? data.member.weight + ' kg' : '-'}</td>
+                    <td>${data.member.plan}</td>
+                    <td>${data.member.trainer || '<span class="text-muted">Not Assigned</span>'}</td>
+                    <td>
+                        <span class="badge bg-${data.member.is_active ? 'success' : 'danger'}">
+                            ${data.member.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${row.children[8].textContent}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="viewMember(${data.member.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editMember(${data.member.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMember(${data.member.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+            }
+            
+            // Show success message
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editMemberModal'));
+            modal.hide();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating member', 'error');
+    });
+});
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Helper function to show notifications
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    // Add animation
+    setTimeout(() => alertDiv.style.opacity = '1', 100);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        alertDiv.style.opacity = '0';
+        setTimeout(() => alertDiv.remove(), 300);
+    }, 5000);
+}
+</script>
+{% endblock %}

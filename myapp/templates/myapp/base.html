@@ -1,0 +1,525 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Oxen Fitness{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --gold-primary: #C6A962;
+            --gold-secondary: #DAA520;
+            --gold-light: #F5E6CA;
+            --gold-dark: #B8860B;
+            --text-dark: #2C3E50;
+            --navbar-height: 80px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            position: relative;
+        }
+        
+        /* Navbar Styles */
+        .navbar {
+            background-color: #000000;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            height: var(--navbar-height);
+        }
+        
+        .navbar-brand {
+            color: var(--gold-primary) !important;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--gold-secondary) !important;
+        }
+        
+        .navbar-toggler {
+            border-color: var(--gold-primary);
+            padding: 0.5rem;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.25rem rgba(198, 169, 98, 0.25);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(198, 169, 98, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        .nav-link {
+            color: var(--gold-light) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--gold-primary) !important;
+            transform: translateY(-1px);
+        }
+        
+        .nav-link.active {
+            color: var(--gold-primary) !important;
+            border-bottom: 2px solid var(--gold-primary);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--gold-secondary), var(--gold-primary));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(198, 169, 98, 0.2);
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+        
+        /* Admin Dashboard Layout */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            bottom: 0;
+            left: 0;
+            width: 250px;
+            background-color: #343a40;
+            color: #fff;
+            z-index: 1020;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: 100%;
+            padding-top: 1rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--gold-primary);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--gold-primary);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 1.5rem;
+            min-height: calc(100vh - var(--navbar-height));
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background-color: var(--black);
+                padding: 1rem;
+                border-radius: 0.25rem;
+                margin-top: 0.5rem;
+            }
+            
+            .nav-link {
+                margin: 0.5rem 0;
+            }
+            
+            .btn-primary {
+                margin: 0.5rem 0;
+            }
+        }
+        
+        /* Footer Styles */
+        .footer {
+            background-color: #000000;
+            color: var(--gold-light);
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer h5 {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .footer p {
+            color: var(--gold-light);
+            opacity: 0.9;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--gold-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold-primary);
+            text-decoration: none;
+            opacity: 1;
+        }
+
+        .footer-contact {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-contact li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .footer-contact i {
+            color: var(--gold-primary);
+            margin-right: 1rem;
+            margin-top: 0.3rem;
+        }
+
+        .footer-social {
+            margin-top: 1.5rem;
+        }
+
+        .footer-social a {
+            color: var(--gold-light);
+            font-size: 1.5rem;
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .footer-social a:hover {
+            color: var(--gold-primary);
+            transform: translateY(-3px);
+            opacity: 1;
+        }
+
+        .footer-bottom {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(198, 169, 98, 0.1);
+        }
+
+        /* Message Styles */
+        .alert {
+            position: fixed;
+            top: var(--navbar-height);
+            right: 20px;
+            z-index: 1029;
+            min-width: 300px;
+            margin-top: 1rem;
+            animation: slideIn 0.5s ease-out;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background-color: rgba(198, 169, 98, 0.1);
+            border-left: 4px solid var(--gold-primary);
+            color: var(--text-dark);
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        /* Container Padding */
+        .main-container {
+            min-height: calc(100vh - var(--navbar-height));
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-secondary);
+        }
+
+        /* Dropdown Styling */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .dropdown-item {
+            color: var(--text-dark);
+            padding: 0.7rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(198, 169, 98, 0.1);
+            color: var(--gold-primary);
+        }
+
+        /* Logo Animation */
+        @keyframes logoGlow {
+            0% { text-shadow: 0 0 10px rgba(198, 169, 98, 0); }
+            50% { text-shadow: 0 0 20px rgba(198, 169, 98, 0.3); }
+            100% { text-shadow: 0 0 10px rgba(198, 169, 98, 0); }
+        }
+
+        .navbar-brand {
+            animation: logoGlow 3s infinite;
+        }
+    </style>
+    
+    <!-- Trainer Management CSS -->
+    <link rel="stylesheet" href="{% static 'myapp/css/trainer.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">Oxen Fitness</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        {% if user.is_superuser %}
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">Admin Dashboard</a>
+                        {% elif user.role == 'trainer' %}
+                            <a class="nav-link {% if request.resolver_match.url_name == 'trainer_dashboard' %}active{% endif %}" href="{% url 'trainer_dashboard' %}">Trainer Dashboard</a>
+                        {% elif user.role == 'member' %}
+                            <a class="nav-link {% if request.resolver_match.url_name == 'member_dashboard' %}active{% endif %}" href="{% url 'member_dashboard' %}">Member Dashboard</a>
+                        {% else %}
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <h5>Oxen Fitness</h5>
+                    <p>Your journey to fitness excellence starts here. Join us and transform your life with our state-of-the-art facilities and expert guidance.</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'about' %}">About Us</a></li>
+                        <li><a href="{% url 'contact' %}">Contact</a></li>
+                        {% if user.is_authenticated %}
+                            {% if user.is_superuser %}
+                                <li><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+                            {% elif user.role == 'trainer' %}
+                                <li><a href="{% url 'trainer_dashboard' %}">Trainer Dashboard</a></li>
+                            {% elif user.role == 'member' %}
+                                <li><a href="{% url 'member_dashboard' %}">Member Dashboard</a></li>
+                            {% else %}
+                                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li><a href="{% url 'login' %}">Login</a></li>
+                            <li><a href="{% url 'register' %}">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Contact Info</h5>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>PPR Village, Phagwara-chandigarh Highway, Phagwara - 144401 (Near Subway, Barista)</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+91 89689 11588</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>info@oxenfitness.com</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Follow Us</h5>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/oxengym/"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/oxenfitnessgym/?hl=en"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom text-center">
+                <p class="mb-0">&copy; {% now "Y" %} Oxen Fitness. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            var alerts = document.querySelectorAll('.alert:not(.no-auto-hide)');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.classList.remove('show');
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

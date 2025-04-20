@@ -1,0 +1,49 @@
+{% load static %}
+
+<div class="text-center mb-4">
+    {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+    {% else %}
+        <img src="{% static 'images/default-profile.svg' %}" alt="Profile" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+    {% endif %}
+    <h5 class="text-white">{{ user.get_full_name|default:user.username }}</h5>
+    <p class="text-muted">Administrator</p>
+</div>
+
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
+            <i class="fas fa-tachometer-alt"></i> Overview
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_pre_registrations' %}active{% endif %}" href="{% url 'manage_pre_registrations' %}">
+            <i class="fas fa-user-plus"></i> Pre-registrations
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_trainers' %}active{% endif %}" href="{% url 'manage_trainers' %}">
+            <i class="fas fa-users"></i> Trainers
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_members' %}active{% endif %}" href="{% url 'manage_members' %}">
+            <i class="fas fa-user-friends"></i> Members
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_plans' %}active{% endif %}" href="{% url 'manage_plans' %}">
+            <i class="fas fa-clipboard-list"></i> Plans
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_payments' %}active{% endif %}" href="{% url 'manage_payments' %}">
+            <i class="fas fa-money-bill-wave"></i> Payments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white" href="{% url 'logout' %}">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </li>
+</ul> 

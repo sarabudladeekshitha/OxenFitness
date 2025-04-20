@@ -1,0 +1,194 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Login - Oxen Fitness{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Welcome Back</h2>
+                        <p class="text-muted">Login to your Oxen Fitness account</p>
+                    </div>
+                    
+                    <div id="messages-container">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post" id="login-form" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="login-btn">
+                                <span class="btn-text">Login</span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.btn-primary {
+    background-color: #ffd700;
+    border-color: #ffd700;
+    color: #000;
+    padding: 12px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #ffed4a;
+    border-color: #ffed4a;
+    color: #000;
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.form-control {
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.custom-alert {
+    border: none;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: rgba(198, 169, 98, 0.1);
+    border-left: 4px solid var(--gold-primary);
+}
+
+/* Loading spinner */
+.spinner-border {
+    margin-left: 8px;
+    width: 1rem;
+    height: 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('login-form');
+    const loginBtn = document.getElementById('login-btn');
+    const btnText = loginBtn.querySelector('.btn-text');
+    const spinner = loginBtn.querySelector('.spinner-border');
+    const messagesContainer = document.getElementById('messages-container');
+    
+    function setLoading(isLoading) {
+        if (isLoading) {
+            loginBtn.disabled = true;
+            btnText.textContent = 'Logging in...';
+            spinner.classList.remove('d-none');
+        } else {
+            loginBtn.disabled = false;
+            btnText.textContent = 'Login';
+            spinner.classList.add('d-none');
+        }
+    }
+    
+    function showError(message) {
+        messagesContainer.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show custom-alert" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        setLoading(true);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json().catch(() => response.text());
+        })
+        .then(data => {
+            if (typeof data === 'string') {
+                // Handle HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const messages = doc.querySelectorAll('.alert');
+                
+                if (messages.length > 0) {
+                    messagesContainer.innerHTML = '';
+                    messages.forEach(message => {
+                        messagesContainer.appendChild(message.cloneNode(true));
+                    });
+                    setLoading(false);
+                } else {
+                    // If no error messages, assume success and let the server handle the redirect
+                    window.location.reload();
+                }
+            } else {
+                // Handle JSON response
+                if (data.success) {
+                    // Redirect to the specified URL
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Show error message
+                    showError(data.error || 'Login failed. Please try again.');
+                    setLoading(false);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('An error occurred. Please try again.');
+            setLoading(false);
+        });
+    });
+});
+</script>
+{% endblock %} 
